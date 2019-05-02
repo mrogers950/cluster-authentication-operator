@@ -105,6 +105,15 @@ const (
 	servingCertPathCert = servingCertMount + "/" + corev1.TLSCertKey
 	servingCertPathKey  = servingCertMount + "/" + corev1.TLSPrivateKeyKey
 
+	ocpBrandingSecretName   = "ocp-branding-template"
+	ocpBrandingSecretMount  = systemConfigPathSecrets + "/" + ocpBrandingSecretName
+	ocpBrandingLoginKey     = "login.html"
+	ocpBrandingProviderKey  = "providers.html"
+	ocpBrandingErrorKey     = "errors.html"
+	ocpBrandingLoginPath    = ocpBrandingSecretMount + "/" + ocpBrandingLoginKey
+	ocpBrandingProviderPath = ocpBrandingSecretMount + "/" + ocpBrandingProviderKey
+	ocpBrandingErrorPath    = ocpBrandingSecretMount + "/" + ocpBrandingErrorKey
+
 	cliConfigNameAndKey = systemConfigPrefix + "cliconfig"
 	cliConfigMount      = systemConfigPathConfigMaps + "/" + cliConfigNameAndKey
 	cliConfigPath       = cliConfigMount + "/" + cliConfigNameAndKey
@@ -293,6 +302,12 @@ func (c *authOperator) handleSync(operatorConfig *operatorv1.Authentication) err
 		return fmt.Errorf("failed handling authentication config: %v", err)
 	}
 	resourceVersions = append(resourceVersions, authConfig.GetResourceVersion())
+
+	brandingSecret, err := c.handleOCPBrandingSecret()
+	if err != nil {
+		return fmt.Errorf("failed getting the OCP branding secret: %v", err)
+	}
+	resourceVersions = append(resourceVersions, brandingSecret.GetResourceVersion())
 
 	// ==================================
 	// BLOCK 2: service and service-ca data

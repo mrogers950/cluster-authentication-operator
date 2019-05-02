@@ -62,6 +62,12 @@ func defaultDeployment(
 			path:      routerCertsLocalMount,
 			keys:      sets.StringKeySet(routerSecret.Data).List(),
 		},
+		{
+			name:      ocpBrandingSecretName,
+			configmap: false,
+			path:      ocpBrandingSecretMount,
+			keys:      []string{ocpBrandingLoginKey, ocpBrandingProviderKey, ocpBrandingErrorKey},
+		},
 	} {
 		v, m := data.split()
 		volumes = append(volumes, v)
