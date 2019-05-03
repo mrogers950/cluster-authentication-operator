@@ -56,7 +56,7 @@ func (c *authOperator) handleOAuthConfig(
 
 	syncData := newConfigSyncData()
 
-	templates, err := c.handleBrandingTemplates(oauthConfig, syncData)
+	templates, err := c.handleBrandingTemplates(oauthConfig.Spec.Templates, syncData)
 	if err != nil {
 		return nil, nil, nil, err
 	}

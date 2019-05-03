@@ -3,5 +3,5 @@
 package operator2
 
 const (
-	DEFAULT_BRAND = "ocp"
+	defaultBrand = ocpBrand
 )

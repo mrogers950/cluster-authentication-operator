@@ -105,14 +105,14 @@ const (
 	servingCertPathCert = servingCertMount + "/" + corev1.TLSCertKey
 	servingCertPathKey  = servingCertMount + "/" + corev1.TLSPrivateKeyKey
 
+	consoleConfigSecret    = "console-config"
+	consoleConfigSecretKey = consoleConfigSecret + ".yaml"
+
 	ocpBrandingSecretName   = "ocp-branding-template"
 	ocpBrandingSecretMount  = systemConfigPathSecrets + "/" + ocpBrandingSecretName
-	ocpBrandingLoginKey     = "login.html"
-	ocpBrandingProviderKey  = "providers.html"
-	ocpBrandingErrorKey     = "errors.html"
-	ocpBrandingLoginPath    = ocpBrandingSecretMount + "/" + ocpBrandingLoginKey
-	ocpBrandingProviderPath = ocpBrandingSecretMount + "/" + ocpBrandingProviderKey
-	ocpBrandingErrorPath    = ocpBrandingSecretMount + "/" + ocpBrandingErrorKey
+	ocpBrandingLoginPath    = ocpBrandingSecretMount + "/" + configv1.LoginTemplateKey
+	ocpBrandingProviderPath = ocpBrandingSecretMount + "/" + configv1.ProviderSelectionTemplateKey
+	ocpBrandingErrorPath    = ocpBrandingSecretMount + "/" + configv1.ErrorsTemplateKey
 
 	cliConfigNameAndKey = systemConfigPrefix + "cliconfig"
 	cliConfigMount      = systemConfigPathConfigMaps + "/" + cliConfigNameAndKey
@@ -278,6 +278,12 @@ func (c *authOperator) handleSync(operatorConfig *operatorv1.Authentication) err
 	// TODO move this hash from deployment meta to operatorConfig.status.generations.[...].hash
 	resourceVersions := []string{}
 
+	brandingSecret, err := c.handleOCPBrandingSecret()
+	if err != nil {
+		return fmt.Errorf("failed getting the OCP branding secret: %v", err)
+	}
+	resourceVersions = append(resourceVersions, brandingSecret.GetResourceVersion())
+
 	// The BLOCK sections are highly order dependent
 
 	// ==================================
@@ -302,12 +308,6 @@ func (c *authOperator) handleSync(operatorConfig *operatorv1.Authentication) err
 		return fmt.Errorf("failed handling authentication config: %v", err)
 	}
 	resourceVersions = append(resourceVersions, authConfig.GetResourceVersion())
-
-	brandingSecret, err := c.handleOCPBrandingSecret()
-	if err != nil {
-		return fmt.Errorf("failed getting the OCP branding secret: %v", err)
-	}
-	resourceVersions = append(resourceVersions, brandingSecret.GetResourceVersion())
 
 	// ==================================
 	// BLOCK 2: service and service-ca data

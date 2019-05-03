@@ -7,13 +7,15 @@ import (
 	"sort"
 	"strings"
 
-	operatorv1 "github.com/openshift/api/operator/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	configv1 "github.com/openshift/api/config/v1"
+	operatorv1 "github.com/openshift/api/operator/v1"
 )
 
 func defaultDeployment(
@@ -66,7 +68,7 @@ func defaultDeployment(
 			name:      ocpBrandingSecretName,
 			configmap: false,
 			path:      ocpBrandingSecretMount,
-			keys:      []string{ocpBrandingLoginKey, ocpBrandingProviderKey, ocpBrandingErrorKey},
+			keys:      []string{configv1.LoginTemplateKey, configv1.ProviderSelectionTemplateKey, configv1.ErrorsTemplateKey},
 		},
 	} {
 		v, m := data.split()
