@@ -73,7 +73,7 @@ func (c *authOperator) handleOCPBrandingSecret() (*corev1.Secret, error) {
 }
 
 func (c *authOperator) getConsoleBranding() (string, error) {
-	cm, err := c.configMaps.ConfigMaps(machineConfigNamespace).Get(consoleConfigSecret, metav1.GetOptions{})
+	cm, err := c.configMaps.ConfigMaps(targetNamespace).Get(consoleConfigMapLocalName, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
 		return "", nil
 	}
@@ -81,7 +81,7 @@ func (c *authOperator) getConsoleBranding() (string, error) {
 		return "", fmt.Errorf("error getting console-config: %v", err)
 	}
 
-	data := cm.Data[consoleConfigSecretKey]
+	data := cm.Data[consoleConfigKey]
 	if len(data) == 0 {
 		return "", nil
 	}

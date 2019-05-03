@@ -105,8 +105,9 @@ const (
 	servingCertPathCert = servingCertMount + "/" + corev1.TLSCertKey
 	servingCertPathKey  = servingCertMount + "/" + corev1.TLSPrivateKeyKey
 
-	consoleConfigSecret    = "console-config"
-	consoleConfigSecretKey = consoleConfigSecret + ".yaml"
+	consoleConfigMapSharedName = "console-config"
+	consoleConfigMapLocalName  = systemConfigPrefix + consoleConfigMapSharedName
+	consoleConfigKey           = consoleConfigMapSharedName + ".yaml"
 
 	ocpBrandingSecretName   = "ocp-branding-template"
 	ocpBrandingSecretMount  = systemConfigPathSecrets + "/" + ocpBrandingSecretName
