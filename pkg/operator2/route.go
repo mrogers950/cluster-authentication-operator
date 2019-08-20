@@ -22,7 +22,14 @@ func (c *authOperator) handleRoute(ingress *configv1.Ingress) (*routev1.Route, *
 	if err != nil {
 		return nil, nil, "FailedCreate", err
 	}
+	defRoute := defaultRoute(ingress)
 
+	if route.Spec.Host != defRoute.Spec.Host {
+		route, err = c.route.Update(defaultRoute(ingress))
+		if err != nil {
+			return nil, nil, "FailedUpdate", err
+		}
+	}
 	host := getCanonicalHost(route, ingress)
 	if len(host) == 0 {
 		// be careful not to print route.spec as it many contain secrets
@@ -36,14 +43,13 @@ func (c *authOperator) handleRoute(ingress *configv1.Ingress) (*routev1.Route, *
 	route.Spec.Host = host
 
 	if err := isValidRoute(route, ingress); err != nil {
-		// TODO remove this delete so that we do not lose the early creation timestamp of our route
-		// delete the route so that it is replaced with the proper one in next reconcile loop
-		klog.Infof("deleting invalid route: %#v", route)
-		opts := &metav1.DeleteOptions{Preconditions: &metav1.Preconditions{UID: &route.UID}}
-		if err := c.route.Delete(route.Name, opts); err != nil && !errors.IsNotFound(err) {
-			klog.Infof("failed to delete invalid route: %v", err)
+		klog.Infof("route invalid: %v, restoring", err)
+		routeUpdate := defaultRoute(ingress)
+		routeUpdate.ObjectMeta = route.ObjectMeta // Preserve metadata
+		route, err = c.route.Update(routeUpdate)
+		if err != nil {
+			return nil, nil, "InvalidRouteFailedUpdate", err
 		}
-		return nil, nil, "InvalidRoute", err
 	}
 
 	routerSecret, err := c.secrets.Secrets(targetNamespace).Get(routerCertsLocalName, metav1.GetOptions{})
